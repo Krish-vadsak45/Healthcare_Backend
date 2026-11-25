@@ -1,0 +1,1123 @@
+openapi: 3.0.3
+info:
+  title: Healthcare Backend API
+  version: 1.0.0
+  description: Production-ready Healthcare Backend system providing secure User Authentication
+    (JWT), Patient Management (strict ownership), Doctor Records, and Patient-Doctor
+    Mappings.
+paths:
+  /api/auth/login/:
+    post:
+      operationId: auth_login_create
+      description: Authenticates user credentials (email & password) and returns JWT
+        access & refresh tokens.
+      summary: Log in user & get JWT token
+      tags:
+      - Authentication
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserLoginRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/UserLoginRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/UserLoginRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserLogin'
+          description: Authentication successful.
+        '400':
+          description: Invalid credentials or validation error.
+  /api/auth/register/:
+    post:
+      operationId: auth_register_create
+      description: Creates a new user account with name, unique email, and secure
+        password.
+      summary: Register a new user
+      tags:
+      - Authentication
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserRegistrationRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/UserRegistrationRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/UserRegistrationRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserDetail'
+          description: User successfully registered.
+        '400':
+          description: Validation error.
+  /api/auth/token/refresh/:
+    post:
+      operationId: auth_token_refresh_create
+      description: |-
+        Takes a refresh type JSON web token and returns an access type JSON web
+        token if the refresh token is valid.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenRefreshRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TokenRefreshRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TokenRefreshRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenRefresh'
+          description: ''
+  /api/doctors/:
+    get:
+      operationId: doctors_list
+      description: Fetches a paginated list of all doctors registered in the system.
+      summary: Retrieve all doctors
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - Doctors
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedDoctorList'
+          description: ''
+    post:
+      operationId: doctors_create
+      description: Registers a new doctor record in the system.
+      summary: Add a new doctor
+      tags:
+      - Doctors
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DoctorRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/DoctorRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/DoctorRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Doctor'
+          description: Doctor created successfully.
+        '400':
+          description: Validation error.
+  /api/doctors/{id}/:
+    get:
+      operationId: doctors_retrieve
+      description: Retrieves the detailed record of a specific doctor by ID.
+      summary: Get details of a specific doctor
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - Doctors
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Doctor'
+          description: ''
+        '404':
+          description: Doctor not found.
+    put:
+      operationId: doctors_update
+      description: Updates all fields of an existing doctor record.
+      summary: Update doctor details
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - Doctors
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DoctorRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/DoctorRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/DoctorRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Doctor'
+          description: ''
+        '400':
+          description: Validation error.
+        '404':
+          description: Doctor not found.
+    patch:
+      operationId: doctors_partial_update
+      description: Updates specific fields of an existing doctor record.
+      summary: Partially update doctor details
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - Doctors
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedDoctorRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedDoctorRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedDoctorRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Doctor'
+          description: ''
+        '400':
+          description: Validation error.
+        '404':
+          description: Doctor not found.
+    delete:
+      operationId: doctors_destroy
+      description: Removes a doctor record from the system.
+      summary: Delete a doctor record
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - Doctors
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: Doctor deleted successfully.
+        '404':
+          description: Doctor not found.
+  /api/mappings/:
+    get:
+      operationId: mappings_list_all
+      description: Fetches all patient-doctor assignments with full nested patient
+        and doctor details.
+      summary: Retrieve all patient-doctor mappings
+      tags:
+      - Mappings
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PatientDoctorMappingDetail'
+          description: ''
+    post:
+      operationId: mappings_create
+      description: Creates an association between a patient and a doctor.
+      summary: Assign a doctor to a patient
+      tags:
+      - Mappings
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatientDoctorMappingCreateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatientDoctorMappingCreateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatientDoctorMappingCreateRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PatientDoctorMappingDetail'
+          description: Doctor successfully assigned to patient.
+        '400':
+          description: Validation error or duplicate assignment.
+  /api/mappings/{id_or_patient_id}/:
+    get:
+      operationId: mappings_get_by_patient
+      description: Retrieves the list of all doctors assigned to the specified patient
+        ID.
+      summary: Get all doctors assigned to a specific patient
+      parameters:
+      - in: path
+        name: id_or_patient_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - Mappings
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AssignedDoctorRecord'
+          description: ''
+        '404':
+          description: Patient not found or unauthorized.
+    delete:
+      operationId: mappings_remove_doctor_assignment
+      description: Deletes a patient-doctor mapping record by mapping ID.
+      summary: Remove a doctor from a patient (Delete mapping)
+      parameters:
+      - in: path
+        name: id_or_patient_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - Mappings
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: Mapping successfully removed.
+        '404':
+          description: Mapping record not found.
+  /api/patients/:
+    get:
+      operationId: patients_list
+      description: Fetches a paginated list of patients created by the authenticated
+        user.
+      summary: Retrieve all patients created by current user
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - Patients
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedPatientList'
+          description: ''
+    post:
+      operationId: patients_create
+      description: Creates a new patient record owned by the authenticated user.
+      summary: Add a new patient
+      tags:
+      - Patients
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatientRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatientRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatientRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Patient'
+          description: Patient created successfully.
+        '400':
+          description: Validation error.
+  /api/patients/{id}/:
+    get:
+      operationId: patients_retrieve
+      description: Retrieves the detailed record of a patient owned by the authenticated
+        user.
+      summary: Get details of a specific patient
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - Patients
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Patient'
+          description: ''
+        '404':
+          description: Patient not found or unauthorized.
+    put:
+      operationId: patients_update
+      description: Updates a patient record owned by the authenticated user.
+      summary: Update patient details
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - Patients
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatientRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatientRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatientRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Patient'
+          description: ''
+        '400':
+          description: Validation error.
+        '404':
+          description: Patient not found or unauthorized.
+    patch:
+      operationId: patients_partial_update
+      description: Partially updates specific fields of a patient record owned by
+        the authenticated user.
+      summary: Partially update patient details
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - Patients
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedPatientRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedPatientRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedPatientRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Patient'
+          description: ''
+        '400':
+          description: Validation error.
+        '404':
+          description: Patient not found or unauthorized.
+    delete:
+      operationId: patients_destroy
+      description: Deletes a patient record owned by the authenticated user.
+      summary: Delete a patient record
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - Patients
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: Patient deleted successfully.
+        '404':
+          description: Patient not found or unauthorized.
+components:
+  schemas:
+    AssignedDoctorRecord:
+      type: object
+      description: Serializer representing an assigned doctor for a specific patient.
+      properties:
+        mapping_id:
+          type: integer
+          readOnly: true
+        doctor:
+          allOf:
+          - $ref: '#/components/schemas/DoctorSummary'
+          readOnly: true
+        notes:
+          type: string
+          readOnly: true
+          nullable: true
+          description: Clinical notes or reason for assignment
+        assigned_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - assigned_at
+      - doctor
+      - mapping_id
+      - notes
+    Doctor:
+      type: object
+      description: Serializer for Doctor CRUD operations.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 255
+        specialization:
+          type: string
+          maxLength: 255
+        email:
+          type: string
+          format: email
+          maxLength: 254
+        phone_number:
+          type: string
+          maxLength: 20
+        years_of_experience:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        hospital_affiliation:
+          type: string
+          nullable: true
+          maxLength: 255
+        created_by:
+          type: integer
+          readOnly: true
+          nullable: true
+          description: User who registered this doctor into the system
+        created_by_name:
+          type: string
+          readOnly: true
+        created_by_email:
+          type: string
+          format: email
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - created_by
+      - created_by_email
+      - created_by_name
+      - email
+      - id
+      - name
+      - phone_number
+      - specialization
+      - updated_at
+    DoctorRequest:
+      type: object
+      description: Serializer for Doctor CRUD operations.
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 255
+        specialization:
+          type: string
+          minLength: 1
+          maxLength: 255
+        email:
+          type: string
+          format: email
+          minLength: 1
+          maxLength: 254
+        phone_number:
+          type: string
+          minLength: 1
+          maxLength: 20
+        years_of_experience:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        hospital_affiliation:
+          type: string
+          nullable: true
+          maxLength: 255
+      required:
+      - email
+      - name
+      - phone_number
+      - specialization
+    DoctorSummary:
+      type: object
+      description: Lightweight serializer for nested doctor representations (e.g.,
+        in mappings).
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          readOnly: true
+        specialization:
+          type: string
+          readOnly: true
+        email:
+          type: string
+          format: email
+          readOnly: true
+        phone_number:
+          type: string
+          readOnly: true
+      required:
+      - email
+      - id
+      - name
+      - phone_number
+      - specialization
+    GenderEnum:
+      enum:
+      - Male
+      - Female
+      - Other
+      type: string
+      description: |-
+        * `Male` - Male
+        * `Female` - Female
+        * `Other` - Other
+    PaginatedDoctorList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Doctor'
+    PaginatedPatientList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Patient'
+    PatchedDoctorRequest:
+      type: object
+      description: Serializer for Doctor CRUD operations.
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 255
+        specialization:
+          type: string
+          minLength: 1
+          maxLength: 255
+        email:
+          type: string
+          format: email
+          minLength: 1
+          maxLength: 254
+        phone_number:
+          type: string
+          minLength: 1
+          maxLength: 20
+        years_of_experience:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        hospital_affiliation:
+          type: string
+          nullable: true
+          maxLength: 255
+    PatchedPatientRequest:
+      type: object
+      description: |-
+        Serializer for Patient CRUD operations.
+        created_by is read-only and automatically assigned in the view.
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 255
+        age:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        gender:
+          $ref: '#/components/schemas/GenderEnum'
+        contact_number:
+          type: string
+          minLength: 1
+          maxLength: 20
+        email:
+          nullable: true
+          oneOf:
+          - type: string
+            format: email
+            maxLength: 254
+          - type: string
+            maxLength: 0
+        address:
+          type: string
+          nullable: true
+        medical_history:
+          type: string
+          nullable: true
+          description: Past conditions, allergies, or notes
+    Patient:
+      type: object
+      description: |-
+        Serializer for Patient CRUD operations.
+        created_by is read-only and automatically assigned in the view.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 255
+        age:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        gender:
+          $ref: '#/components/schemas/GenderEnum'
+        contact_number:
+          type: string
+          maxLength: 20
+        email:
+          nullable: true
+          oneOf:
+          - type: string
+            format: email
+            maxLength: 254
+          - type: string
+            maxLength: 0
+        address:
+          type: string
+          nullable: true
+        medical_history:
+          type: string
+          nullable: true
+          description: Past conditions, allergies, or notes
+        created_by:
+          type: integer
+          readOnly: true
+          description: The authenticated user who created and owns this patient record
+        created_by_name:
+          type: string
+          readOnly: true
+        created_by_email:
+          type: string
+          format: email
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - age
+      - contact_number
+      - created_at
+      - created_by
+      - created_by_email
+      - created_by_name
+      - gender
+      - id
+      - name
+      - updated_at
+    PatientDoctorMappingCreateRequest:
+      type: object
+      description: |-
+        Serializer for creating a new patient-doctor mapping.
+        Validates patient ownership and uniqueness.
+      properties:
+        patient:
+          type: integer
+        doctor:
+          type: integer
+        notes:
+          type: string
+          nullable: true
+          description: Clinical notes or reason for assignment
+      required:
+      - doctor
+      - patient
+    PatientDoctorMappingDetail:
+      type: object
+      description: |-
+        Serializer for detailed view of patient-doctor mappings.
+        Includes nested patient and doctor representations.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        patient:
+          allOf:
+          - $ref: '#/components/schemas/PatientSummary'
+          readOnly: true
+        doctor:
+          allOf:
+          - $ref: '#/components/schemas/DoctorSummary'
+          readOnly: true
+        notes:
+          type: string
+          readOnly: true
+          nullable: true
+          description: Clinical notes or reason for assignment
+        assigned_by_email:
+          type: string
+          format: email
+          readOnly: true
+        assigned_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - assigned_at
+      - assigned_by_email
+      - doctor
+      - id
+      - notes
+      - patient
+    PatientRequest:
+      type: object
+      description: |-
+        Serializer for Patient CRUD operations.
+        created_by is read-only and automatically assigned in the view.
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 255
+        age:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        gender:
+          $ref: '#/components/schemas/GenderEnum'
+        contact_number:
+          type: string
+          minLength: 1
+          maxLength: 20
+        email:
+          nullable: true
+          oneOf:
+          - type: string
+            format: email
+            maxLength: 254
+          - type: string
+            maxLength: 0
+        address:
+          type: string
+          nullable: true
+        medical_history:
+          type: string
+          nullable: true
+          description: Past conditions, allergies, or notes
+      required:
+      - age
+      - contact_number
+      - gender
+      - name
+    PatientSummary:
+      type: object
+      description: Lightweight summary serializer for patient in mapping representations.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          readOnly: true
+        age:
+          type: integer
+          readOnly: true
+        gender:
+          allOf:
+          - $ref: '#/components/schemas/GenderEnum'
+          readOnly: true
+        contact_number:
+          type: string
+          readOnly: true
+      required:
+      - age
+      - contact_number
+      - gender
+      - id
+      - name
+    TokenRefresh:
+      type: object
+      properties:
+        access:
+          type: string
+          readOnly: true
+        refresh:
+          type: string
+      required:
+      - access
+      - refresh
+    TokenRefreshRequest:
+      type: object
+      properties:
+        refresh:
+          type: string
+          minLength: 1
+      required:
+      - refresh
+    UserDetail:
+      type: object
+      description: Read-only public serializer for user information.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          readOnly: true
+        email:
+          type: string
+          format: email
+          readOnly: true
+          title: Email address
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - email
+      - id
+      - name
+    UserLogin:
+      type: object
+      description: |-
+        Serializer for user login with email and password.
+        Returns access and refresh JWT tokens alongside user metadata.
+      properties:
+        email:
+          type: string
+          format: email
+        tokens:
+          type: object
+          additionalProperties: {}
+          readOnly: true
+        user:
+          type: object
+          additionalProperties: {}
+          readOnly: true
+      required:
+      - email
+      - tokens
+      - user
+    UserLoginRequest:
+      type: object
+      description: |-
+        Serializer for user login with email and password.
+        Returns access and refresh JWT tokens alongside user metadata.
+      properties:
+        email:
+          type: string
+          format: email
+          minLength: 1
+        password:
+          type: string
+          writeOnly: true
+          minLength: 1
+      required:
+      - email
+      - password
+    UserRegistrationRequest:
+      type: object
+      description: |-
+        Serializer for new user registration.
+        Validates name, unique email, and strong password.
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 255
+        email:
+          type: string
+          format: email
+          minLength: 1
+          title: Email address
+          maxLength: 255
+        password:
+          type: string
+          writeOnly: true
+          minLength: 1
+          description: Password must be at least 8 characters long.
+      required:
+      - email
+      - name
+      - password
+  securitySchemes:
+    jwtAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+tags:
+- name: Authentication
+  description: User registration, login, and JWT token management.
+- name: Patients
+  description: Patient records management with strict creator ownership.
+- name: Doctors
+  description: Doctor directory and record management.
+- name: Mappings
+  description: Patient-Doctor association and lookup.

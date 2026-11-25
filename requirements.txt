@@ -1,0 +1,17 @@
+# Django Core & REST Framework
+Django>=5.0,<5.2
+djangorestframework>=3.15.0
+djangorestframework-simplejwt>=5.3.1
+django-cors-headers>=4.3.1
+
+# PostgreSQL Driver
+psycopg2-binary>=2.9.9
+
+# Environment Management
+python-dotenv>=1.0.1
+
+# API Documentation (Swagger / OpenAPI 3)
+drf-spectacular>=0.27.2
+
+# Testing & Utilities
+pytest-django>=4.8.0
